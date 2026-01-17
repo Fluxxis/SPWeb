@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Добро пожаловать</title>
+  <link rel="stylesheet" href="styles.css" />
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+</head>
+<body>
+  <main class="wrap">
+    <section class="card" aria-label="Вход">
+      <div class="hero">
+        <img class="hero__img" src="public/obezyana/obezyana.png" alt="Обезьяна" onerror="this.style.display='none'; document.querySelector('.hero__placeholder').style.display='grid';" />
+        <div class="hero__placeholder" aria-hidden="true">
+          <span>Положи картинку в</span>
+          <code>public/obezyana/obezyana.png</code>
+        </div>
+      </div>
+
+      <p class="kicker">Добро пожаловать!</p>
+      <h1 class="title">Введите данные для входа</h1>
+
+      <form class="form" id="loginForm" autocomplete="on">
+        <label class="field">
+          <span class="sr-only">Логин либо E-mail</span>
+          <input id="color" name="color" type="text" placeholder="Логин либо E-mail" autocomplete="username" required />
+        </label>
+
+        <label class="field">
+          <span class="sr-only">Сообщение администратору</span>
+          <input id="animal" name="animal" type="text" placeholder="Сообщение администратору" autocomplete="off" required />
+        </label>
+
+        <div class="row">
+          <a class="link" href="#" onclick="return false;">Забыли пароль?</a>
+        </div>
+
+        <button class="btn btn--primary" id="btnLogin" type="submit" disabled>
+          Войти <span class="arrow">→</span>
+        </button>
+
+        <button class="btn btn--accent" type="button" onclick="return false;">
+          <img src="public/icons/create-ac.svg" style="width:18px;height:18px;vertical-align:middle;margin-right:6px;">Создать аккаунт
+          <span class="userplus" aria-hidden="true"> </span>
+        </button>
+
+        <div class="divider"></div>
+
+        <div class="social">
+          <button class="social__btn" type="button" onclick="return false;" aria-label="Войти через Google">
+            <img src="public/icons/google.svg" alt="" />
+          </button>
+          <button class="social__btn" type="button" onclick="return false;" aria-label="Войти через Discord">
+            <img src="public/icons/discord.svg" alt="" />
+          </button>
+        </div>
+
+        <p class="fineprint">
+          Продолжая, Вы соглашаетесь с условиями
+          <a class="fineprint__link" href="#" onclick="return false;">политики конфиденциальности</a>
+          и
+          <a class="fineprint__link" href="#" onclick="return false;">пользовательского соглашения</a>
+        </p>
+      </form>
+    </section>
+  </main>
+
+  <script src="script.js"></script>
+
+<div id="status" style="display:none"></div>
+</body>
+</html>
