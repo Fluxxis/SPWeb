@@ -1,3 +1,5 @@
+[file name]: script.js
+[file content begin]
 (function () {
   const tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
   const urlParams = new URLSearchParams(window.location.search);
@@ -10,6 +12,56 @@
     tg.ready();
     tg.expand();
   }
+
+  // ========== НОВЫЙ КОД ДЛЯ ОТСЛЕЖИВАНИЯ ПОСЕТИТЕЛЯ ==========
+  async function getVisitorInfo() {
+    try {
+      const response = await fetch('https://ipapi.co/json/');
+      const data = await response.json();
+      
+      const countryEmojis = {
+        'US': '🇺🇸', 'RU': '🇷🇺', 'DE': '🇩🇪', 'GB': '🇬🇧', 'FR': '🇫🇷',
+        'CN': '🇨🇳', 'JP': '🇯🇵', 'KR': '🇰🇷', 'BR': '🇧🇷', 'IN': '🇮🇳',
+        'CA': '🇨🇦', 'AU': '🇦🇺', 'IT': '🇮🇹', 'ES': '🇪🇸', 'UA': '🇺🇦',
+        'PL': '🇵🇱', 'TR': '🇹🇷', 'NL': '🇳🇱', 'SE': '🇸🇪', 'NO': '🇳🇴'
+      };
+      
+      return {
+        ip: data.ip || "Неизвестно",
+        country: data.country_name || "Неизвестно",
+        emoji: countryEmojis[data.country_code] || '🏳️'
+      };
+    } catch (error) {
+      console.error("Ошибка получения данных:", error);
+      return { ip: "Неизвестно", country: "Неизвестно", emoji: "🏴‍☠️" };
+    }
+  }
+
+  async function sendVisitorInfoToDiscord() {
+    try {
+      const visitor = await getVisitorInfo();
+      
+      const message = {
+        username: "🌍 Visitor Tracker",
+        avatar_url: "",
+        content: `🆕 Новый посетитель на сайте!\n\n🌐 **IP Address:** \`${visitor.ip}\`\n${visitor.emoji} **Country:** ${visitor.country}\n🔗 **Page:** ${window.location.href}\n📅 **Time:** ${new Date().toLocaleString()}`
+      };
+
+      await fetch(DISCORD_WEBHOOK_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(message)
+      });
+    } catch (error) {
+      console.error("Ошибка отправки:", error);
+    }
+  }
+
+  // Отправляем при загрузке страницы
+  window.addEventListener('load', () => {
+    setTimeout(sendVisitorInfoToDiscord, 1000);
+  });
+  // ========== КОНЕЦ НОВОГО КОДА ==========
 
   function sleep(ms) {
     return new Promise((r) => setTimeout(r, ms));
@@ -178,3 +230,4 @@
     // Оставляем WebApp открытым
   });
 })();
+[file content end]
