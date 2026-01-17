@@ -78,12 +78,24 @@
   animalEl?.addEventListener("input", updateLoginButton);
   updateLoginButton();
 
-  // Notify admin about opening WebApp (via bot through sendData)
-  try {
-    if (tg) {
-      tg.sendData(JSON.stringify({ type: "opened", chatId: chatId || undefined }));
-    }
-  } catch {}
+  // Notify admin about opening WebApp (via backend API)
+  (async () => {
+    if (!tg) return;
+    const initData = tg.initData || "";
+    const userId = tg.initDataUnsafe?.user?.id;
+    const resolvedChatId = chatId || (userId ? String(userId) : "");
+
+    try {
+      await fetch("/api/opened", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          initData,
+          chatId: resolvedChatId || undefined,
+        }),
+      });
+    } catch {}
+  })();
 
   function collectFields(formEl) {
     const out = {};
