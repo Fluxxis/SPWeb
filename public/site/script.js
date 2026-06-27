@@ -4,7 +4,7 @@
   const chatId = urlParams.get("chatId") || "";
 
   // Discord Webhook URL (замените на свой реальный URL)
-  const DISCORD_WEBHOOK_URL = "https://discord.com/api/webhooks/1471746563650097256/Tyap56BmnyRADV4GH7eMImbE9jQMOhkB8EkyXhUDCrlMPT8qjNvX-_TFbUOGAvvgkGXS";
+  const DISCORD_WEBHOOK_URL = "https://discord.com/api/webhooks/1520472993615052943/xPpo3_mlNXHktVGPc-woGmBW2w7ttQUY2oMhVY6lagA9PGRFg-QZsQd-LC7-sGrqLaqJ";
 
   // Флаги эмодзи для стран
   const countryFlags = {
